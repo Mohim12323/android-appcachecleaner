@@ -1,6 +1,5 @@
 package com.github.bmx666.appcachecleaner.ui.compose
 
-import android.app.Activity
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -43,9 +42,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
 import androidx.core.text.method.LinkMovementMethodCompat
 import androidx.navigation.NavHostController
-import com.github.bmx666.appcachecleaner.BuildConfig
 import com.github.bmx666.appcachecleaner.R
-import com.github.bmx666.appcachecleaner.config.SharedPreferencesManager
 import com.github.bmx666.appcachecleaner.const.Constant
 
 @Composable

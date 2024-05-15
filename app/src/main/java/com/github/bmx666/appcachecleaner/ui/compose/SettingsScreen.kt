@@ -18,10 +18,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -36,23 +37,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.bmx666.appcachecleaner.R
 import com.github.bmx666.appcachecleaner.const.Constant
-import com.github.bmx666.appcachecleaner.viewmodel.SettingsViewModel
+import com.github.bmx666.appcachecleaner.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(navController: NavHostController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    val context = LocalContext.current
-    val settingsViewModel = SettingsViewModel(context)
+    val viewModel: SettingsViewModel = hiltViewModel()
 
     Scaffold(
         modifier = Modifier
@@ -104,11 +104,27 @@ fun SettingsScreen(navController: NavHostController) {
             ) {
                 SettingsGroup(resId = R.string.prefs_ui) {
                     SettingsSwitch(
-                        resId = R.string.prefs_ui_night_mode,
-                        state = settingsViewModel._isNightModeOn.collectAsState(),
-                    ) {
-                        settingsViewModel.toggleNightMode()
-                    }
+                        titleResId = R.string.prefs_ui_night_mode,
+                        state = viewModel.uiNightMode.collectAsState(),
+                        onClick = { viewModel.toggleNightMode() }
+                    )
+                    HorizontalDivider()
+                }
+
+                SettingsGroup(resId = R.string.filter) {
+                    SettingsSwitch(
+                        titleResId = R.string.prefs_title_filter_hide_disabled_apps,
+                        summaryResId = R.string.prefs_summary_filter_min_cache_size,
+                        state = viewModel.filterHideDisabledApps.collectAsState(),
+                        onClick = { viewModel.toggleFilterHideDisabledApps() }
+                    )
+                    HorizontalDivider()
+                    SettingsSwitch(
+                        titleResId = R.string.prefs_title_filter_hide_ignored_apps,
+                        state = viewModel.filterHideIgnoredApps.collectAsState(),
+                        onClick = { viewModel.toggleFilterHideIgnoredApps() }
+                    )
+                    HorizontalDivider()
                 }
             }
         }
@@ -119,12 +135,12 @@ fun SettingsScreen(navController: NavHostController) {
 private fun SettingsGroup(
     @StringRes resId: Int,
     // to accept only composables compatible with column
-    content: @Composable ColumnScope.() -> Unit ){
+    content: @Composable ColumnScope.() -> Unit
+){
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(stringResource(id = resId))
         Spacer(modifier = Modifier.height(8.dp))
         Surface(
-            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4),
         ) {
@@ -137,27 +153,28 @@ private fun SettingsGroup(
 
 @Composable
 private fun SettingsSwitch(
-    @StringRes resId: Int,
+    @StringRes titleResId: Int,
+    @StringRes summaryResId: Int? = null,
     state: State<Boolean>,
     onClick: () -> Unit
 ) {
     Surface(
-        color = Color.Transparent,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
     ) {
         Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = stringResource(id = resId),
+                        text = stringResource(id = titleResId),
+                        maxLines = 1,
                         modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleMedium,
                         textAlign = TextAlign.Start,
                     )
                 }
@@ -167,7 +184,14 @@ private fun SettingsSwitch(
                     onCheckedChange = { onClick() }
                 )
             }
-            Divider()
+            summaryResId?.let {
+                Text(
+                    text = stringResource(id = it),
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Start,
+                )
+            }
         }
     }
 }
@@ -176,15 +200,13 @@ private fun SettingsSwitch(
 private fun SettingsSwitchIcon(
     @DrawableRes icon: Int,
     @StringRes iconDesc: Int,
-    @StringRes resId: Int,
+    @StringRes titleResId: Int,
+    @StringRes summaryResId: Int? = null,
     state: State<Boolean>,
     onClick: () -> Unit
 ) {
     Surface(
-        color = Color.Transparent,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
     ) {
         Column {
@@ -200,7 +222,7 @@ private fun SettingsSwitchIcon(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(id = resId),
+                        text = stringResource(id = titleResId),
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Start,
@@ -212,7 +234,14 @@ private fun SettingsSwitchIcon(
                     onCheckedChange = { onClick() }
                 )
             }
-            Divider()
+            summaryResId?.let {
+                Text(
+                    text = stringResource(id = it),
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Start,
+                )
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import android.app.StatusBarManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageInfo
+import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
@@ -13,15 +14,17 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.annotation.UiContext
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.compose.runtime.Composable
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,6 +50,7 @@ import com.github.bmx666.appcachecleaner.ui.dialog.PermissionDialogBuilder
 import com.github.bmx666.appcachecleaner.ui.fragment.PackageListFragment
 import com.github.bmx666.appcachecleaner.ui.fragment.SettingsFragment
 import com.github.bmx666.appcachecleaner.ui.theme.AppTheme
+import com.github.bmx666.appcachecleaner.ui.viewmodel.AppViewModel
 import com.github.bmx666.appcachecleaner.util.ActivityHelper
 import com.github.bmx666.appcachecleaner.util.ExtraSearchTextHelper
 import com.github.bmx666.appcachecleaner.util.IIntentActivityCallback
@@ -55,8 +59,11 @@ import com.github.bmx666.appcachecleaner.util.LocaleHelper
 import com.github.bmx666.appcachecleaner.util.PackageManagerHelper
 import com.github.bmx666.appcachecleaner.util.PermissionChecker
 import com.github.bmx666.appcachecleaner.util.TileRequestResult
+import com.github.bmx666.appcachecleaner.util.getDayNightModeContext
 import com.github.bmx666.appcachecleaner.util.toFormattedString
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -66,13 +73,15 @@ import org.springframework.util.unit.DataSize
 import java.io.File
 import java.util.Locale
 
-
+@AndroidEntryPoint
 class AppCacheCleanerActivity : AppCompatActivity(), IIntentActivityCallback {
 
     companion object {
         const val ARG_DISPLAY_TEXT = "display-text"
         const val FRAGMENT_CONTAINER_VIEW_TAG = "fragment-container-view-tag"
     }
+
+    private val appViewModel: AppViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
 
@@ -343,6 +352,8 @@ class AppCacheCleanerActivity : AppCompatActivity(), IIntentActivityCallback {
 
         val startDestination: String
 
+        observeNightMode()
+
         val isFirstBoot = runBlocking {
             SharedPreferencesManager.FirstBoot.showFirstBootConfirmation(this@AppCacheCleanerActivity)
         }
@@ -420,6 +431,32 @@ class AppCacheCleanerActivity : AppCompatActivity(), IIntentActivityCallback {
                 }
             }
         }
+    }
+
+    private fun observeNightMode() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                appViewModel.nightMode.collect { isNightMode ->
+                    applyNightMode(isNightMode)
+                }
+            }
+        }
+    }
+
+    private fun applyNightMode(isNightMode: Boolean) {
+        val nightMode = if (isNightMode) {
+            AppCompatDelegate.MODE_NIGHT_YES
+        } else {
+            AppCompatDelegate.MODE_NIGHT_NO
+        }
+        AppCompatDelegate.setDefaultNightMode(nightMode)
+        /*
+        val uiModeFlag = if (isNightMode) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+        val config = Configuration(resources.configuration)
+        config.uiMode = uiModeFlag or (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv())
+        // createConfigurationContext(config)
+        resources.updateConfiguration(config, resources.displayMetrics)
+        */
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

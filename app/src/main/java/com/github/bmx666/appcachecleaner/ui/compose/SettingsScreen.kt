@@ -1,19 +1,9 @@
 package com.github.bmx666.appcachecleaner.ui.compose
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -22,30 +12,24 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.github.bmx666.appcachecleaner.R
 import com.github.bmx666.appcachecleaner.const.Constant
+import com.github.bmx666.appcachecleaner.ui.compose.view.SettingsGroup
+import com.github.bmx666.appcachecleaner.ui.compose.view.SettingsSwitch
 import com.github.bmx666.appcachecleaner.ui.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,119 +113,4 @@ fun SettingsScreen(navController: NavHostController) {
             }
         }
     )
-}
-
-@Composable
-private fun SettingsGroup(
-    @StringRes resId: Int,
-    // to accept only composables compatible with column
-    content: @Composable ColumnScope.() -> Unit
-){
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(stringResource(id = resId))
-        Spacer(modifier = Modifier.height(8.dp))
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(4),
-        ) {
-            Column {
-                content()
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsSwitch(
-    @StringRes titleResId: Int,
-    @StringRes summaryResId: Int? = null,
-    state: State<Boolean>,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-    ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(id = titleResId),
-                        maxLines = 1,
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Start,
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = state.value,
-                    onCheckedChange = { onClick() }
-                )
-            }
-            summaryResId?.let {
-                Text(
-                    text = stringResource(id = it),
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Start,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsSwitchIcon(
-    @DrawableRes icon: Int,
-    @StringRes iconDesc: Int,
-    @StringRes titleResId: Int,
-    @StringRes summaryResId: Int? = null,
-    state: State<Boolean>,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-    ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painterResource(id = icon),
-                        contentDescription = stringResource(id = iconDesc),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(id = titleResId),
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Start,
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = state.value,
-                    onCheckedChange = { onClick() }
-                )
-            }
-            summaryResId?.let {
-                Text(
-                    text = stringResource(id = it),
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Start,
-                )
-            }
-        }
-    }
 }

@@ -3,7 +3,6 @@ package com.github.bmx666.appcachecleaner.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.bmx666.appcachecleaner.data.UserPreferencesManager
-import com.github.bmx666.appcachecleaner.data.UserPreferencesUI
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
